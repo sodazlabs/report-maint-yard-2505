@@ -3,26 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YT Equipment Maintenance Dashboard</title>
+    <title>GPS 인식률 주간 분석 보고서</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
         :root {
-            --primary: #6366F1;
+            --primary: #3B82F6;
             --secondary: #8B5CF6;
-            --accent: #EC4899;
             --success: #10B981;
             --warning: #F59E0B;
             --danger: #EF4444;
             --dark: #1F2937;
-            --light: #F9FAFB;
+            --light: #F8FAFC;
             --glass: rgba(255, 255, 255, 0.1);
-            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         }
 
         * {
@@ -33,54 +28,25 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0F0C29 0%, #24243e 50%, #313862 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: white;
-            overflow-x: hidden;
-        }
-
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.1;
-        }
-
-        .floating-shape {
-            position: absolute;
-            border-radius: 50%;
-            background: var(--gradient-1);
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .shape-1 { width: 300px; height: 300px; top: 10%; left: 10%; animation-delay: 0s; }
-        .shape-2 { width: 200px; height: 200px; top: 60%; right: 10%; animation-delay: 2s; }
-        .shape-3 { width: 150px; height: 150px; bottom: 20%; left: 30%; animation-delay: 4s; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
+            color: #333;
+            padding: 1rem;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 2rem;
-            position: relative;
-            z-index: 1;
         }
 
         .glass {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
         }
 
-        /* Header */
         .header {
             text-align: center;
             padding: 3rem 2rem;
@@ -93,183 +59,120 @@
             content: '';
             position: absolute;
             top: 0;
-            left: -100%;
-            width: 200%;
-            height: 2px;
-            background: var(--gradient-3);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
-            100% { transform: translateX(100%); }
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
         }
 
         .header h1 {
-            font-size: clamp(2rem, 5vw, 4rem);
-            font-weight: 900;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--dark);
             margin-bottom: 1rem;
-            letter-spacing: -0.02em;
         }
 
         .header .subtitle {
             font-size: 1.2rem;
-            opacity: 0.8;
+            color: #64748B;
             margin-bottom: 1.5rem;
-            font-weight: 400;
         }
 
-        .period-badge {
-            display: inline-flex;
-            align-items: center;
+        .period {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
             padding: 0.75rem 2rem;
-            background: var(--gradient-2);
             border-radius: 50px;
             font-weight: 600;
             font-size: 1rem;
-            box-shadow: var(--shadow);
-            animation: pulse 2s infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        /* Metrics Grid */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
             margin-bottom: 3rem;
         }
 
         .metric-card {
             padding: 2rem;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            transition: transform 0.3s ease;
         }
 
         .metric-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3);
+            transform: translateY(-5px);
         }
-
-        .metric-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--card-gradient);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .metric-card:hover::before {
-            opacity: 1;
-        }
-
-        .metric-card.total { --card-gradient: var(--gradient-1); }
-        .metric-card.simple { --card-gradient: var(--gradient-4); }
-        .metric-card.critical { --card-gradient: var(--gradient-2); }
-        .metric-card.time { --card-gradient: var(--gradient-3); }
 
         .metric-icon {
             width: 60px;
             height: 60px;
             border-radius: 16px;
-            background: var(--card-gradient);
+            margin: 0 auto 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
-            margin-bottom: 1rem;
+            color: white;
         }
 
         .metric-value {
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: 800;
-            line-height: 1;
             margin-bottom: 0.5rem;
-            background: var(--card-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .metric-label {
-            font-size: 0.9rem;
-            opacity: 0.7;
+            font-size: 1rem;
+            color: #64748B;
             font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .metric-trend {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
             font-weight: 600;
-            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .excellent { 
+            --metric-color: var(--success);
             color: var(--success);
         }
-
-        /* Charts Section */
-        .charts-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 3rem;
+        .warning { 
+            --metric-color: var(--warning);
+            color: var(--warning);
+        }
+        .critical { 
+            --metric-color: var(--danger);
+            color: var(--danger);
         }
 
-        .chart-container {
-            padding: 2rem;
-            position: relative;
-            height: 400px;
-            max-height: 400px;
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            padding: 1.5rem;
+            height: 350px;
+        }
+
+        .chart-title {
+            font-size: clamp(1rem, 3vw, 1.25rem);
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 1.5rem;
+            text-align: center;
         }
 
         .chart-wrapper {
             position: relative;
-            height: 300px;
-            width: 100%;
+            height: 250px;
         }
 
-        .chart-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .chart-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-left: 1rem;
-        }
-
-        .chart-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            background: var(--gradient-1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Equipment Analysis */
         .analysis-section {
             padding: 2rem;
             margin-bottom: 2rem;
@@ -278,77 +181,59 @@
         .section-title {
             font-size: 1.5rem;
             font-weight: 700;
+            color: var(--dark);
             margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #E2E8F0;
         }
 
-        .section-title::before {
-            content: '';
-            width: 4px;
-            height: 2rem;
-            background: var(--gradient-1);
-            border-radius: 2px;
-            margin-right: 1rem;
-        }
-
-        .equipment-grid {
+        .vehicle-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
 
-        .equipment-card {
-            padding: 1.5rem;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .equipment-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--status-color);
-        }
-
-        .equipment-card.high-risk { --status-color: var(--danger); }
-        .equipment-card.medium-risk { --status-color: var(--warning); }
-        .equipment-card.low-risk { --status-color: var(--success); }
-
-        .equipment-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .equipment-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .risk-badge {
-            padding: 0.25rem 0.75rem;
+        .vehicle-card {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
             border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .vehicle-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .vehicle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .vehicle-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 600;
-            background: var(--status-color);
             color: white;
         }
 
-        .equipment-stats {
+        .status-excellent { background: var(--success); }
+        .status-warning { background: var(--warning); }
+        .status-critical { background: var(--danger); }
+
+        .vehicle-stats {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: repeat(3, 1fr);
             gap: 1rem;
             margin-bottom: 1rem;
         }
@@ -360,44 +245,65 @@
         .stat-value {
             font-size: 1.5rem;
             font-weight: 700;
-            margin-bottom: 0.25rem;
+            color: var(--dark);
         }
 
         .stat-label {
-            font-size: 0.75rem;
-            opacity: 0.7;
-            text-transform: uppercase;
+            font-size: 0.8rem;
+            color: #64748B;
+            margin-top: 0.25rem;
         }
 
         .progress-bar {
             width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
             overflow: hidden;
         }
 
         .progress-fill {
             height: 100%;
-            background: var(--status-color);
-            border-radius: 3px;
+            border-radius: 4px;
             transition: width 1s ease-out;
         }
 
-        /* Recommendations */
+        .issues-section {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .issues-title {
+            color: var(--danger);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .issue-item {
+            background: white;
+            border: 1px solid #FECACA;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
         .recommendations {
+            background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+            border: 1px solid #BFDBFE;
+            border-radius: 12px;
             padding: 2rem;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            border-radius: 20px;
             margin-top: 2rem;
         }
 
         .recommendations h3 {
-            font-size: 1.25rem;
+            color: var(--primary);
             font-weight: 700;
             margin-bottom: 1.5rem;
-            color: var(--primary);
         }
 
         .recommendation-list {
@@ -406,404 +312,408 @@
         }
 
         .recommendation-item {
-            padding: 1rem 1.5rem;
-            background: rgba(255, 255, 255, 0.05);
+            background: white;
+            border: 1px solid #BFDBFE;
             border-left: 4px solid var(--primary);
             border-radius: 8px;
-            transition: all 0.3s ease;
+            padding: 1rem;
         }
 
-        .recommendation-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateX(5px);
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table th {
+            background: var(--dark);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .data-table tr:hover {
+            background: #F8FAFC;
         }
 
         .footer {
             text-align: center;
-            padding: 2rem;
-            opacity: 0.5;
-            font-size: 0.9rem;
+            color: #64748B;
             margin-top: 3rem;
+            font-size: 0.9rem;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
             .charts-section {
                 grid-template-columns: 1fr;
             }
             
-            .equipment-stats {
+            .vehicle-stats {
                 grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+            
+            .data-table {
+                font-size: 0.7rem;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 0.5rem 0.3rem;
+            }
+            
+            .vehicle-card {
+                padding: 0.8rem;
+            }
+            
+            .analysis-section {
+                padding: 1rem;
+            }
+            
+            .header {
+                padding: 1.5rem 1rem;
+            }
+            
+            .metric-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
+            .chart-card {
+                height: 300px;
+                padding: 1rem;
+            }
+            
+            .chart-wrapper {
+                height: 200px;
+            }
+            
+            .status-badge {
+                font-size: 0.6rem;
+                padding: 0.15rem 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
             }
             
             .container {
-                padding: 1rem;
+                padding: 0;
             }
-        }
-
-        /* Animations */
-        .fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
-        }
-
-        .slide-up {
-            animation: slideUp 0.8s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            
+            .header h1 {
+                font-size: 1.3rem;
+            }
+            
+            .header .subtitle {
+                font-size: 0.85rem;
+            }
+            
+            .period {
+                font-size: 0.75rem;
+                padding: 0.5rem 1rem;
+            }
+            
+            .metric-value {
+                font-size: 1.5rem;
+            }
+            
+            .metric-label {
+                font-size: 0.75rem;
+            }
+            
+            .data-table {
+                font-size: 0.65rem;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 0.4rem 0.2rem;
+            }
+            
+            .chart-card {
+                height: 250px;
+                padding: 0.8rem;
+            }
+            
+            .chart-wrapper {
+                height: 180px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="bg-animation">
-        <div class="floating-shape shape-1"></div>
-        <div class="floating-shape shape-2"></div>
-        <div class="floating-shape shape-3"></div>
-    </div>
-
     <div class="container">
         <!-- Header -->
-        <header class="header glass fade-in">
-            <h1>🚛 YT 장비 관리 대시보드</h1>
-            <p class="subtitle">실시간 유지보수 분석 및 인사이트</p>
-            <div class="period-badge">
-                📅 2025년 5월 보고서
-            </div>
+        <header class="header glass">
+            <h1>📡 GPS 인식률 분석 보고서</h1>
+            <p class="subtitle">야드트럭 RFID/GPS 주간 성능 모니터링</p>
+            <div class="period">📅 2025.06.06 ~ 2025.06.13 (7일간)</div>
         </header>
 
         <!-- Key Metrics -->
         <section class="metrics-grid">
-            <div class="metric-card glass total slide-up">
-                <div class="metric-icon">📊</div>
-                <div class="metric-value" data-count="73">0</div>
-                <div class="metric-label">총 장애 건수</div>
-                <div class="metric-trend">+12%</div>
+            <div class="metric-card glass excellent">
+                <div class="metric-icon" style="background: var(--success);">📊</div>
+                <div class="metric-value">95.2%</div>
+                <div class="metric-label">전체 평균 인식률</div>
+                <div class="metric-trend">▲ 우수</div>
             </div>
-            <div class="metric-card glass simple slide-up" style="animation-delay: 0.1s">
-                <div class="metric-icon">✅</div>
-                <div class="metric-value" data-count="59">0</div>
-                <div class="metric-label">단순 처리</div>
-                <div class="metric-trend">81%</div>
+            <div class="metric-card glass warning">
+                <div class="metric-icon" style="background: var(--warning);">⚠️</div>
+                <div class="metric-value">2일</div>
+                <div class="metric-label">T281 이상 발생일</div>
+                <div class="metric-trend">▼ 주의 필요</div>
             </div>
-            <div class="metric-card glass critical slide-up" style="animation-delay: 0.2s">
-                <div class="metric-icon">🔧</div>
-                <div class="metric-value" data-count="14">0</div>
-                <div class="metric-label">교체 필요</div>
-                <div class="metric-trend">19%</div>
+            <div class="metric-card glass excellent">
+                <div class="metric-icon" style="background: var(--primary);">🚛</div>
+                <div class="metric-value">3대</div>
+                <div class="metric-label">모니터링 차량</div>
+                <div class="metric-trend">T147, T166, T281</div>
             </div>
-            <div class="metric-card glass time slide-up" style="animation-delay: 0.3s">
-                <div class="metric-icon">⚡</div>
-                <div class="metric-value" data-count="18">0</div>
-                <div class="metric-label">평균 시간(분)</div>
-                <div class="metric-trend">-15%</div>
+            <div class="metric-card glass excellent">
+                <div class="metric-icon" style="background: var(--secondary);">📈</div>
+                <div class="metric-value">1,137</div>
+                <div class="metric-label">총 인식 건수</div>
+                <div class="metric-trend">일평균 162건</div>
             </div>
         </section>
 
         <!-- Charts -->
         <section class="charts-section">
-            <div class="chart-container glass">
-                <div class="chart-header">
-                    <div class="chart-icon">📈</div>
-                    <h3 class="chart-title">장비별 장애 현황</h3>
-                </div>
+            <div class="chart-card glass">
+                <h3 class="chart-title">📈 일별 인식률 추이</h3>
                 <div class="chart-wrapper">
-                    <canvas id="equipmentChart"></canvas>
+                    <canvas id="trendChart"></canvas>
                 </div>
             </div>
-            <div class="chart-container glass">
-                <div class="chart-header">
-                    <div class="chart-icon">⚙️</div>
-                    <h3 class="chart-title">처리 유형별 분포</h3>
-                </div>
+            <div class="chart-card glass">
+                <h3 class="chart-title">🚛 차량별 평균 인식률</h3>
                 <div class="chart-wrapper">
-                    <canvas id="processingChart"></canvas>
+                    <canvas id="vehicleChart"></canvas>
                 </div>
             </div>
         </section>
 
-        <!-- Equipment Analysis -->
+        <!-- Vehicle Analysis -->
         <section class="analysis-section glass">
-            <h2 class="section-title">장애 원인 분석</h2>
+            <h2 class="section-title">🚛 차량별 상세 분석</h2>
             
-            <div class="insights-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin-bottom: 2rem;">
-                <div class="insight-card" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24);">
-                    <div class="insight-title">🔌 네트워크 관련</div>
-                    <div class="insight-content">
-                        <strong>5G 라우터 유심칩 접불 (9건)</strong><br>
-                        가장 빈번한 장애 원인
+            <div class="vehicle-grid">
+                <!-- T147 -->
+                <div class="vehicle-card">
+                    <div class="vehicle-header">
+                        <div class="vehicle-name">🚛 T147 (주력 차량)</div>
+                        <div class="status-badge status-excellent">우수</div>
+                    </div>
+                    <div class="vehicle-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">100%</div>
+                            <div class="stat-label">평균 인식률</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">376</div>
+                            <div class="stat-label">총 인식</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">미인식</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%; background: var(--success);"></div>
                     </div>
                 </div>
-                <div class="insight-card" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
-                    <div class="insight-title">📱 단말기 설정</div>
-                    <div class="insight-content">
-                        <strong>WiFi 자동연결 해제 (8건)</strong><br>
-                        설정값 변경으로 해결
+
+                <!-- T166 -->
+                <div class="vehicle-card">
+                    <div class="vehicle-header">
+                        <div class="vehicle-name">🚛 T166 (안정 운영)</div>
+                        <div class="status-badge status-excellent">우수</div>
+                    </div>
+                    <div class="vehicle-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">100%</div>
+                            <div class="stat-label">평균 인식률</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">408</div>
+                            <div class="stat-label">총 인식</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">미인식</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%; background: var(--success);"></div>
                     </div>
                 </div>
-                <div class="insight-card" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">
-                    <div class="insight-title">👁️ 씨잉머신</div>
-                    <div class="insight-content">
-                        <strong>동작 이상 (4건)</strong><br>
-                        이미지 재삽입으로 해결
+
+                <!-- T281 -->
+                <div class="vehicle-card">
+                    <div class="vehicle-header">
+                        <div class="vehicle-name">🚛 T281 (문제 차량)</div>
+                        <div class="status-badge status-warning">주의</div>
                     </div>
-                </div>
-                <div class="insight-card" style="background: linear-gradient(135deg, #ff9a9e, #fecfef);">
-                    <div class="insight-title">⚡ 전원 문제</div>
-                    <div class="insight-content">
-                        <strong>전원선/컨버터 (9건)</strong><br>
-                        재접촉 및 교체로 해결
+                    <div class="vehicle-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">85.6%</div>
+                            <div class="stat-label">평균 인식률</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">353</div>
+                            <div class="stat-label">총 인식</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">77</div>
+                            <div class="stat-label">미인식</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 85.6%; background: var(--warning);"></div>
                     </div>
                 </div>
             </div>
 
-            <div style="background: rgba(255, 255, 255, 0.03); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
-                <h3 style="margin-bottom: 1rem; color: #fff; font-size: 1.1rem;">📊 주요 장애 원인 TOP 10</h3>
-                <div style="display: grid; gap: 0.5rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span>🔌 5G 라우터 유심칩 접불</span>
-                        <span style="background: #ff6b6b; padding: 0.2rem 0.8rem; border-radius: 12px; font-weight: 600;">9건</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span>📱 단말기 WiFi 자동연결 해제</span>
-                        <span style="background: #4facfe; padding: 0.2rem 0.8rem; border-radius: 12px; font-weight: 600;">8건</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span>👁️ 씨잉머신 동작 이상</span>
-                        <span style="background: #10b981; padding: 0.2rem 0.8rem; border-radius: 12px; font-weight: 600;">4건</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span>📡 5G 라우터 불량</span>
-                        <span style="background: #f59e0b; padding: 0.2rem 0.8rem; border-radius: 12px; font-weight: 600;">4건</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span>🔧 단말기 브라켓 고정 풀림</span>
-                        <span style="background: #8b5cf6; padding: 0.2rem 0.8rem; border-radius: 12px; font-weight: 600;">3건</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span>🔌 단말기 전원 컨버터 OFF</span>
-                        <span style="background: #8b5cf6; padding: 0.2rem 0.8rem; border-radius: 12px; font-weight: 600;">3건</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span>🛰️ GPS 전원선 미접 상태</span>
-                        <span style="background: #8b5cf6; padding: 0.2rem 0.8rem; border-radius: 12px; font-weight: 600;">3건</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span>🖥️ 단말기 불량</span>
-                        <span style="background: #ec4899; padding: 0.2rem 0.8rem; border-radius: 12px; font-weight: 600;">2건</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span>📱 단말기 케이스 불량</span>
-                        <span style="background: #ec4899; padding: 0.2rem 0.8rem; border-radius: 12px; font-weight: 600;">2건</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0;">
-                        <span>📻 마이크 불량</span>
-                        <span style="background: #ec4899; padding: 0.2rem 0.8rem; border-radius: 12px; font-weight: 600;">2건</span>
-                    </div>
+            <!-- Issues Section -->
+            <div class="issues-section">
+                <h3 class="issues-title">🚨 주요 문제점 및 이슈</h3>
+                <div class="issue-item">
+                    <strong>T281 차량 GPS 인식 불안정</strong><br>
+                    • 6월 8일: 인식률 32.65% (미인식 33건, 인식 16건)<br>
+                    • 6월 9일: 인식률 29.03% (미인식 44건, 인식 18건)<br>
+                    • 원인: GPS 안테나 또는 RFID 리더기 하드웨어 이상 추정
                 </div>
-            </div>
-        </section>
-
-        <!-- Equipment Risk Analysis -->
-        <section class="analysis-section glass">
-            <h2 class="section-title">장비 위험도 분석</h2>
-            
-            <div class="equipment-grid">
-                <div class="equipment-card high-risk">
-                    <div class="equipment-name">
-                        🖥️ 단말기
-                        <div class="risk-badge">높음</div>
-                    </div>
-                    <div class="equipment-stats">
-                        <div class="stat-item">
-                            <div class="stat-value">29</div>
-                            <div class="stat-label">총계</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">19</div>
-                            <div class="stat-label">단순</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">10</div>
-                            <div class="stat-label">교체</div>
-                        </div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 34.5%"></div>
-                    </div>
-                </div>
-
-                <div class="equipment-card medium-risk">
-                    <div class="equipment-name">
-                        📡 P-LTE 라우터
-                        <div class="risk-badge">중간</div>
-                    </div>
-                    <div class="equipment-stats">
-                        <div class="stat-item">
-                            <div class="stat-value">20</div>
-                            <div class="stat-label">총계</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">16</div>
-                            <div class="stat-label">단순</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">4</div>
-                            <div class="stat-label">교체</div>
-                        </div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 20%"></div>
-                    </div>
-                </div>
-
-                <div class="equipment-card low-risk">
-                    <div class="equipment-name">
-                        👁️ 씨잉머신
-                        <div class="risk-badge">낮음</div>
-                    </div>
-                    <div class="equipment-stats">
-                        <div class="stat-item">
-                            <div class="stat-value">11</div>
-                            <div class="stat-label">총계</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">11</div>
-                            <div class="stat-label">단순</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">0</div>
-                            <div class="stat-label">교체</div>
-                        </div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <div class="equipment-card low-risk">
-                    <div class="equipment-name">
-                        📻 무전기
-                        <div class="risk-badge">낮음</div>
-                    </div>
-                    <div class="equipment-stats">
-                        <div class="stat-item">
-                            <div class="stat-value">7</div>
-                            <div class="stat-label">총계</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">7</div>
-                            <div class="stat-label">단순</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">0</div>
-                            <div class="stat-label">교체</div>
-                        </div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <div class="equipment-card low-risk">
-                    <div class="equipment-name">
-                        🛰️ GPS
-                        <div class="risk-badge">낮음</div>
-                    </div>
-                    <div class="equipment-stats">
-                        <div class="stat-item">
-                            <div class="stat-value">4</div>
-                            <div class="stat-label">총계</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">4</div>
-                            <div class="stat-label">단순</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">0</div>
-                            <div class="stat-label">교체</div>
-                        </div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 0%"></div>
-                    </div>
+                <div class="issue-item">
+                    <strong>T281 차량 6월 10일 이후 회복</strong><br>
+                    • 6월 10일부터 인식률 100% 회복<br>
+                    • 현장 점검 또는 자동 복구로 추정
                 </div>
             </div>
 
+            <!-- Detailed Data Table -->
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--dark);">📋 상세 데이터</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>날짜</th>
+                        <th>차량번호</th>
+                        <th>미인식</th>
+                        <th>인식</th>
+                        <th>인식률(%)</th>
+                        <th>상태</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>2025-06-06</td><td>T147</td><td>0</td><td>36</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-06</td><td>T166</td><td>0</td><td>57</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-06</td><td>T281</td><td>0</td><td>28</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-07</td><td>T147</td><td>0</td><td>53</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-07</td><td>T166</td><td>0</td><td>13</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-07</td><td>T281</td><td>0</td><td>64</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-08</td><td>T147</td><td>0</td><td>58</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-08</td><td>T166</td><td>0</td><td>68</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr style="background: #FEF2F2;"><td>2025-06-08</td><td>T281</td><td>33</td><td>16</td><td>32.65</td><td><span class="status-badge status-critical">장애</span></td></tr>
+                    <tr><td>2025-06-09</td><td>T147</td><td>0</td><td>81</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-09</td><td>T166</td><td>0</td><td>84</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr style="background: #FEF2F2;"><td>2025-06-09</td><td>T281</td><td>44</td><td>18</td><td>29.03</td><td><span class="status-badge status-critical">장애</span></td></tr>
+                    <tr><td>2025-06-10</td><td>T147</td><td>0</td><td>61</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-10</td><td>T166</td><td>0</td><td>54</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-10</td><td>T281</td><td>0</td><td>51</td><td>100.00</td><td><span class="status-badge status-excellent">회복</span></td></tr>
+                    <tr><td>2025-06-11</td><td>T147</td><td>0</td><td>43</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-11</td><td>T166</td><td>0</td><td>30</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-11</td><td>T281</td><td>0</td><td>73</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-12</td><td>T147</td><td>0</td><td>44</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-12</td><td>T166</td><td>0</td><td>68</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-12</td><td>T281</td><td>0</td><td>72</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                    <tr><td>2025-06-13</td><td>T166</td><td>0</td><td>34</td><td>100.00</td><td><span class="status-badge status-excellent">정상</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- Recommendations -->
             <div class="recommendations">
-                <h3>🎯 전략적 개선 권고사항</h3>
+                <h3>🎯 개선 권고사항</h3>
                 <div class="recommendation-list">
                     <div class="recommendation-item">
-                        <strong>단말기 품질 강화:</strong> 전원 커넥터 내구성 개선 필요 (교체율 34.5%)
+                        <strong>T281 차량 긴급 점검:</strong> GPS 안테나 및 RFID 리더기 하드웨어 정밀 진단 실시
                     </div>
                     <div class="recommendation-item">
-                        <strong>5G 라우터 유심칩 관리:</strong> 정기 점검 및 고정 방법 개선 (9건 발생)
+                        <strong>예방 정비 강화:</strong> 주 1회 GPS 신호 품질 점검 및 안테나 상태 확인
                     </div>
                     <div class="recommendation-item">
-                        <strong>WiFi 설정 안정화:</strong> 자동연결 해제 방지 솔루션 도입 (8건 발생)
+                        <strong>실시간 모니터링:</strong> 인식률 80% 이하 시 즉시 알림 시스템 구축
                     </div>
                     <div class="recommendation-item">
-                        <strong>예방 정비 강화:</strong> 점검 주기를 격주에서 주단위로 변경
+                        <strong>백업 시스템:</strong> GPS 장애 시 대체 위치 추적 방안 마련
                     </div>
                     <div class="recommendation-item">
-                        <strong>재고 관리:</strong> 단말기 및 라우터 예비품 20% 버퍼 유지
+                        <strong>정기 교체:</strong> GPS 모듈 및 안테나 2년 주기 예방적 교체 계획 수립
                     </div>
                     <div class="recommendation-item">
-                        <strong>직원 교육:</strong> 주요 장애 원인별 대응 매뉴얼 교육 실시
+                        <strong>데이터 분석:</strong> 주간/월간 인식률 트렌드 분석으로 조기 경보 체계 구축
                     </div>
                 </div>
             </div>
         </section>
 
         <footer class="footer">
-            <p>🚀 고급 분석 엔진으로 생성 | 기밀 보고서 | 2025.06.13</p>
+            <p>🚀 GPS 모니터링 시스템 | 자동 생성 보고서 | 2025.06.13</p>
         </footer>
     </div>
 
     <script>
-        // Number counting animation
-        function animateNumbers() {
-            const counters = document.querySelectorAll('[data-count]');
-            counters.forEach(counter => {
-                const target = parseInt(counter.getAttribute('data-count'));
-                let current = 0;
-                const increment = target / 50;
-                const timer = setInterval(() => {
-                    current += increment;
-                    if (current >= target) {
-                        counter.textContent = target;
-                        clearInterval(timer);
-                    } else {
-                        counter.textContent = Math.floor(current);
-                    }
-                }, 20);
-            });
-        }
-
-        // Modern Equipment Chart
-        const equipmentCtx = document.getElementById('equipmentChart').getContext('2d');
-        const equipmentChart = new Chart(equipmentCtx, {
-            type: 'bar',
+        // 일별 인식률 추이 차트
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        new Chart(trendCtx, {
+            type: 'line',
             data: {
-                labels: ['단말기', 'P-LTE', '씨잉머신', '무전기', 'GPS'],
+                labels: ['06/06', '06/07', '06/08', '06/09', '06/10', '06/11', '06/12', '06/13'],
                 datasets: [{
-                    label: '단순 처리',
-                    data: [19, 16, 11, 7, 4],
-                    backgroundColor: 'rgba(16, 185, 129, 0.8)',
-                    borderRadius: 8,
-                    borderSkipped: false,
+                    label: 'T147',
+                    data: [100, 100, 100, 100, 100, 100, 100, null],
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
                 }, {
-                    label: '교체 필요',
-                    data: [10, 4, 0, 0, 0],
-                    backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                    borderRadius: 8,
-                    borderSkipped: false,
+                    label: 'T166', 
+                    data: [100, 100, 100, 100, 100, 100, 100, 100],
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }, {
+                    label: 'T281',
+                    data: [100, 100, 32.65, 29.03, 100, 100, 100, null],
+                    borderColor: '#EF4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
                 }]
             },
             options: {
@@ -813,20 +723,43 @@
                     legend: {
                         position: 'top',
                         labels: {
-                            color: 'white',
                             usePointStyle: true,
-                            padding: 20
+                            padding: 20,
+                            font: {
+                                size: 12,
+                                weight: '600'
+                            }
                         }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: 'white',
+                        bodyColor: 'white',
+                        cornerRadius: 8,
+                        padding: 12
                     }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
+                        max: 100,
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
+                            color: 'rgba(0, 0, 0, 0.1)'
                         },
                         ticks: {
-                            color: 'rgba(255, 255, 255, 0.7)'
+                            callback: function(value) {
+                                return value + '%';
+                            },
+                            font: {
+                                size: 11
+                            }
                         }
                     },
                     x: {
@@ -834,27 +767,35 @@
                             display: false
                         },
                         ticks: {
-                            color: 'rgba(255, 255, 255, 0.7)'
+                            font: {
+                                size: 11
+                            }
                         }
                     }
                 }
             }
         });
 
-        // Modern Processing Chart
-        const processingCtx = document.getElementById('processingChart').getContext('2d');
-        const processingChart = new Chart(processingCtx, {
+        // 차량별 평균 인식률 차트
+        const vehicleCtx = document.getElementById('vehicleChart').getContext('2d');
+        new Chart(vehicleCtx, {
             type: 'doughnut',
             data: {
-                labels: ['단순 처리', '교체 필요'],
+                labels: ['T147 (100%)', 'T166 (100%)', 'T281 (85.6%)'],
                 datasets: [{
-                    data: [59, 14],
+                    data: [376, 408, 353],
                     backgroundColor: [
-                        'rgba(16, 185, 129, 0.8)',
-                        'rgba(239, 68, 68, 0.8)'
+                        '#10B981',
+                        '#3B82F6', 
+                        '#F59E0B'
                     ],
-                    borderWidth: 0,
-                    cutout: '70%'
+                    borderColor: [
+                        '#059669',
+                        '#2563EB',
+                        '#D97706'
+                    ],
+                    borderWidth: 3,
+                    cutout: '60%'
                 }]
             },
             options: {
@@ -864,39 +805,70 @@
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: 'white',
                             usePointStyle: true,
-                            padding: 20
+                            padding: 20,
+                            font: {
+                                size: 12,
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: 'white',
+                        bodyColor: 'white',
+                        cornerRadius: 8,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${value}건 (${percentage}%)`;
+                            }
                         }
                     }
                 }
             }
         });
 
-        // Initialize animations
-        setTimeout(animateNumbers, 500);
-
-        // Add intersection observer for animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
+        // 카운터 애니메이션
+        function animateCounters() {
+            const counters = document.querySelectorAll('.metric-value');
+            counters.forEach(counter => {
+                const target = parseFloat(counter.textContent.replace('%', ''));
+                let current = 0;
+                const increment = target / 50;
+                const isPercentage = counter.textContent.includes('%');
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        counter.textContent = isPercentage ? target + '%' : Math.round(target);
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = isPercentage ? 
+                            Math.floor(current) + '%' : 
+                            Math.floor(current);
+                    }
+                }, 20);
             });
-        }, observerOptions);
+        }
 
-        document.querySelectorAll('.slide-up').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(30px)';
-            el.style.transition = 'all 0.8s ease-out';
-            observer.observe(el);
-        });
+        // 페이지 로드 후 애니메이션 시작
+        setTimeout(animateCounters, 500);
+
+        // 프로그레스 바 애니메이션
+        setTimeout(() => {
+            document.querySelectorAll('.progress-fill').forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100);
+            });
+        }, 1000);
     </script>
 </body>
 </html>
